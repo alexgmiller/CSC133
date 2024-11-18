@@ -1,0 +1,91 @@
+package com.mycompany.a2;
+
+import com.codename1.ui.Button;
+import com.codename1.ui.Container;
+import com.codename1.ui.Form;
+import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.plaf.Border;
+import com.mycompany.a2.commands.*;
+
+public class Game extends Form {
+    private GameWorld gw;  // The game world (model)
+    private MapView mapView;  // The map view (observer)
+    private ScoreView scoreView;  // The score view (observer)
+
+    public Game() {
+        gw = new GameWorld();  // Create the GameWorld (Model)
+        mapView = new MapView();  // Create the MapView (View)
+        scoreView = new ScoreView();  // Create the ScoreView (View)
+
+        // Register views as observers of GameWorld
+        gw.addObserver(mapView);
+        gw.addObserver(scoreView);
+
+        // Set layout for the game
+        this.setLayout(new BorderLayout());
+
+        // Add the ScoreView at the top
+        this.add(BorderLayout.NORTH, scoreView);
+
+        // Add the MapView at the center
+        this.add(BorderLayout.CENTER, mapView);
+
+        // Create toolbar for the title bar
+        Toolbar toolbar = new Toolbar();
+        this.setToolbar(toolbar);
+        toolbar.setTitle("The Rescue Game");
+
+        // Add the side panel with styled buttons
+        this.add(BorderLayout.WEST, createSideButtonPanel());
+
+        // Initialize the game world and start the game
+        gw.init();
+    }
+
+    // Create a side panel with buttons arranged vertically
+    private Container createSideButtonPanel() {
+        Container sidePanel = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        sidePanel.getAllStyles().setPadding(10, 10, 10, 10);  // Padding around the side panel
+
+        // Create buttons for game actions
+        Button expandButton = new Button("Expand");
+        Button contractButton = new Button("Contract");
+        Button upButton = new Button("Up");
+        Button downButton = new Button("Down");
+        Button leftButton = new Button("Left");
+        Button rightButton = new Button("Right");
+
+        // Apply styles to each button
+        applyButtonStyles(expandButton);
+        applyButtonStyles(contractButton);
+        applyButtonStyles(upButton);
+        applyButtonStyles(downButton);
+        applyButtonStyles(leftButton);
+        applyButtonStyles(rightButton);
+
+        // Set commands to each button (assuming the commands are already defined in your project)
+        expandButton.setCommand(new ExpandDoorCommand(gw));
+        contractButton.setCommand(new ContractDoorCommand(gw));
+        upButton.setCommand(new MoveUpCommand(gw));
+        downButton.setCommand(new MoveDownCommand(gw));
+        leftButton.setCommand(new MoveLeftCommand(gw));
+        rightButton.setCommand(new MoveRightCommand(gw));
+
+        // Add buttons to the side panel container
+        sidePanel.addAll(expandButton, contractButton, upButton, downButton, leftButton, rightButton);
+
+        return sidePanel;
+    }
+
+    // Helper method to apply consistent styles to each button
+    private void applyButtonStyles(Button button) {
+        button.getAllStyles().setBgColor(0xCCCCCC);  // Light gray background color
+        button.getAllStyles().setFgColor(0x000000);  // Black text color
+        button.getAllStyles().setBgTransparency(255); // Fully opaque background
+        button.getAllStyles().setPadding(5, 5, 10, 10); // Top, bottom, left, right padding
+        button.getAllStyles().setMargin(5, 5, 0, 0);  // Top, bottom, left, right margin
+        button.getAllStyles().setBorder(Border.createLineBorder(2, 0x000000)); // Black line border
+    }
+}

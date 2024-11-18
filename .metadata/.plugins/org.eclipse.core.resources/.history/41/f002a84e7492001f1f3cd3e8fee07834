@@ -1,0 +1,39 @@
+package com.mycompany.a2;
+
+import com.codename1.ui.Container;
+import com.codename1.ui.Label;
+import com.codename1.ui.layouts.BoxLayout;
+import java.util.Observable;
+import java.util.Observer;
+
+public class ScoreView extends Container implements Observer {
+    private Label scoreLabel;
+    private Label astronautsRescuedLabel;
+    private Label aliensSneakedInLabel;
+    private Label gameClockLabel;
+
+    public ScoreView() {
+        this.setLayout(new BoxLayout(BoxLayout.X_AXIS));  // Horizontal layout for score view
+        scoreLabel = new Label("Total Score: 0");
+        astronautsRescuedLabel = new Label("Astronauts Rescued: 0");
+        aliensSneakedInLabel = new Label("Aliens Sneaked In: 0");
+        gameClockLabel = new Label("Game Clock: 0");
+
+        this.add(scoreLabel);
+        this.add(astronautsRescuedLabel);
+        this.add(aliensSneakedInLabel);
+        this.add(gameClockLabel);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o instanceof GameWorld) {
+            GameWorld gw = (GameWorld) o;
+            scoreLabel.setText("Total Score: " + gw.getTotalScore());
+            astronautsRescuedLabel.setText("Astronauts Rescued: " + gw.getAstronautsRescued());
+            aliensSneakedInLabel.setText("Aliens Sneaked In: " + gw.getAliensSneakedIn());
+            gameClockLabel.setText("Game Clock: " + gw.getGameClock());
+            this.revalidate();  // Refresh the view
+        }
+    }
+}

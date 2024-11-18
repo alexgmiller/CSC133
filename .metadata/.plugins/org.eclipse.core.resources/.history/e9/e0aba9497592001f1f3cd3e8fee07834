@@ -1,0 +1,142 @@
+package com.mycompany.a2;
+
+import java.util.Observable;
+import java.util.Random;
+import com.codename1.charts.util.ColorUtil;
+
+public class GameWorld extends Observable {  // Extend Observable
+    private int totalScore;
+    private int astronautsRescued;
+    private int aliensSneakedIn;
+    private int astronautCount;
+    private int alienCount;
+    private int gameClock;
+    private boolean gameEnded;
+    private GameObjectCollection gameObjects;  // Use GameObjectCollection for storing game objects
+    private Spaceship spaceship;
+    private final int gameWorldWidth = 1000;
+    private final int gameWorldHeight = 1000;
+    private Random random = new Random();
+
+    // Constructor
+    public GameWorld() {
+        gameObjects = new GameObjectCollection();  // Initialize GameObjectCollection
+    }
+
+    // Initialize the game world
+    public void init() {
+        this.totalScore = 0;
+        this.astronautsRescued = 0;
+        this.aliensSneakedIn = 0;
+        this.astronautCount = 4;  // Fixed count of 4 astronauts
+        this.alienCount = 3;      // Fixed count of 3 aliens
+        this.gameClock = 0;
+        this.gameEnded = false;
+
+        addGameObjects();  // Add initial game objects
+
+        // Notify observers (views) that the game has initialized
+        setChanged();
+        notifyObservers();
+    }
+
+    // Add initial GameObjects (Astronauts, Aliens, and Spaceship) to the GameWorld
+    private void addGameObjects() {
+        for (int i = 0; i < astronautCount; i++) {
+            gameObjects.add(new Astronaut());  // Add astronauts
+        }
+
+        for (int i = 0; i < alienCount; i++) {
+            gameObjects.add(new Alien());  // Add aliens
+        }
+
+        this.spaceship = Spaceship.getInstance();  // Singleton pattern for spaceship
+        gameObjects.add(spaceship);
+    }
+
+    // Example: Move right and notify observers
+    public void moveRight() {
+        float currentX = spaceship.getLocation().getX();
+        if (currentX + 10 <= gameWorldWidth) {
+            spaceship.moveRight();
+            setChanged();  // Mark that the state has changed
+            notifyObservers();  // Notify observers (MapView, ScoreView) of the change
+        } else {
+            System.out.println("Cannot move right. Spaceship is at the right boundary.");
+        }
+    }
+
+    // Similarly, update other methods to notify observers after a change
+    public void moveLeft() {
+        float currentX = spaceship.getLocation().getX();
+        if (currentX - 10 >= 0) {
+            spaceship.moveLeft();
+            setChanged();
+            notifyObservers();
+        } else {
+            System.out.println("Cannot move left. Spaceship is at the left boundary.");
+        }
+    }
+
+    public void moveUp() {
+        float currentY = spaceship.getLocation().getY();
+        if (currentY + 10 <= gameWorldHeight) {
+            spaceship.moveUp();
+            setChanged();
+            notifyObservers();
+        } else {
+            System.out.println("Cannot move up. Spaceship is at the top boundary.");
+        }
+    }
+
+    public void moveDown() {
+        float currentY = spaceship.getLocation().getY();
+        if (currentY - 10 >= 0) {
+            spaceship.moveDown();
+            setChanged();
+            notifyObservers();
+        } else {
+            System.out.println("Cannot move down. Spaceship is at the bottom boundary.");
+        }
+    }
+
+    // Example: Notify observers during game tick
+    public void gameTick() {
+        gameClock++;
+        IIterator iterator = gameObjects.getIterator();
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof IMoving) {
+                ((IMoving) obj).move();  // Update positions of moving objects
+            }
+        }
+        setChanged();  // Mark state as changed
+        notifyObservers();  // Notify observers of the change
+    }
+
+    // Print the game state (score, astronaut and alien counts, etc.)
+    public void printGameState() {
+        System.out.println("Total score: " + totalScore);
+        System.out.println("Astronauts rescued: " + astronautsRescued);
+        System.out.println("Aliens sneaked in: " + aliensSneakedIn);
+        System.out.println("Remaining astronauts: " + astronautCount);
+        System.out.println("Remaining aliens: " + alienCount);
+    }
+
+    // Getters for game state (for ScoreView)
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public int getAstronautsRescued() {
+        return astronautsRescued;
+    }
+
+    public int getAliensSneakedIn() {
+        return aliensSneakedIn;
+    }
+
+    public int getGameClock() {
+        return gameClock;
+    }
+}

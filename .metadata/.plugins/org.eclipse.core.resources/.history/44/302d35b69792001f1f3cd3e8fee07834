@@ -1,0 +1,155 @@
+package com.mycompany.a2;
+
+import com.codename1.ui.Button;
+import com.codename1.ui.Container;
+import com.codename1.ui.Form;
+import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.plaf.Border;
+import com.codename1.ui.geom.Dimension;
+import com.mycompany.a2.commands.*;
+
+public class Game extends Form {
+    private GameWorld gw;  // The game world (model)
+    private MapView mapView;  // The map view (observer)
+    private ScoreView scoreView;  // The score view (observer)
+
+    public Game() {
+        gw = new GameWorld();  // Create the GameWorld (Model)
+        mapView = new MapView();  // Create the MapView (View)
+        scoreView = new ScoreView();  // Create the ScoreView (View)
+
+        // Register views as observers of GameWorld
+        gw.addObserver(mapView);
+        gw.addObserver(scoreView);
+
+        // Set layout for the game
+        this.setLayout(new BorderLayout());
+
+        // Add the ScoreView at the top
+        this.add(BorderLayout.NORTH, scoreView);
+
+        // Add the MapView at the center
+        this.add(BorderLayout.CENTER, mapView);
+
+        // Create toolbar for the title bar
+        Toolbar toolbar = new Toolbar();
+        this.setToolbar(toolbar);
+        toolbar.setTitle("The Rescue Game");
+
+        // Add Help command to the right side of the toolbar
+        toolbar.addCommandToRightBar(new HelpCommand());
+
+        // Add the side panels and bottom panel with styled buttons
+        this.add(BorderLayout.WEST, createLeftButtonPanel());
+        this.add(BorderLayout.EAST, createRightButtonPanel());
+        this.add(BorderLayout.SOUTH, createBottomButtonPanel());
+
+        // Initialize the game world and start the game
+        gw.init();
+    }
+
+    // Create a container for buttons on the left side
+    private Container createLeftButtonPanel() {
+        Container leftPanel = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        leftPanel.getAllStyles().setPadding(10, 10, 10, 10);  // Padding around the side panel
+
+        // Create buttons for game actions
+        Button expandButton = new Button("Expand Door");
+        Button upButton = new Button("Move Up");
+        Button leftButton = new Button("Move Left");
+        Button moveToAstronautButton = new Button("MoveToAstronaut");
+
+        // Apply styles to each button
+        applyButtonStyles(expandButton);
+        applyButtonStyles(upButton);
+        applyButtonStyles(leftButton);
+        applyButtonStyles(moveToAstronautButton);
+
+        // Set commands for each button (assuming commands are already defined in your project)
+        expandButton.setCommand(new ExpandDoorCommand(gw));
+        upButton.setCommand(new MoveUpCommand(gw));
+        leftButton.setCommand(new MoveLeftCommand(gw));
+        moveToAstronautButton.setCommand(new MoveToAstronautCommand(gw));
+
+        // Add buttons to the left panel container
+        leftPanel.addAll(expandButton, upButton, leftButton, moveToAstronautButton);
+
+        return leftPanel;
+    }
+
+    // Create a container for buttons on the right side
+    private Container createRightButtonPanel() {
+        Container rightPanel = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        rightPanel.getAllStyles().setPadding(10, 10, 10, 10);  // Padding around the side panel
+
+        // Create buttons for game actions
+        Button contractButton = new Button("Contract Door");
+        Button downButton = new Button("Move Down");
+        Button rightButton = new Button("Move Right");
+        Button moveToAlienButton = new Button("MoveToAlien");
+        Button scoreButton = new Button("Score");
+
+        // Apply styles to each button
+        applyButtonStyles(contractButton);
+        applyButtonStyles(downButton);
+        applyButtonStyles(rightButton);
+        applyButtonStyles(moveToAlienButton);
+        applyButtonStyles(scoreButton);
+
+        // Set commands for each button (assuming commands are already defined in your project)
+        contractButton.setCommand(new ContractDoorCommand(gw));
+        downButton.setCommand(new MoveDownCommand(gw));
+        rightButton.setCommand(new MoveRightCommand(gw));
+        moveToAlienButton.setCommand(new MoveToAlienCommand(gw));
+        scoreButton.setCommand(new ScoreCommand(gw));
+
+        // Add buttons to the right panel container
+        rightPanel.addAll(contractButton, downButton, rightButton, moveToAlienButton, scoreButton);
+
+        return rightPanel;
+    }
+
+    // Create a container for buttons at the bottom
+    private Container createBottomButtonPanel() {
+        Container bottomPanel = new Container(new BoxLayout(BoxLayout.X_AXIS));
+        bottomPanel.getAllStyles().setPadding(10, 10, 10, 10);  // Padding around the bottom panel
+
+        // Create buttons for game actions
+        Button newAlienButton = new Button("NewAlien");
+        Button fightButton = new Button("Fight");
+        Button tickButton = new Button("Tick");
+
+        // Apply styles to each button
+        applyButtonStyles(newAlienButton);
+        applyButtonStyles(fightButton);
+        applyButtonStyles(tickButton);
+
+        // Set commands for each button (assuming commands are already defined in your project)
+        newAlienButton.setCommand(new NewAlienCommand(gw));
+        fightButton.setCommand(new FightCommand(gw));
+        tickButton.setCommand(new GameTickCommand(gw));
+
+        // Add buttons to the bottom panel container
+        bottomPanel.addAll(newAlienButton, fightButton, tickButton);
+
+        return bottomPanel;
+    }
+
+    // Helper method to apply consistent styles to each button
+    private void applyButtonStyles(Button button) {
+        // Set background color to blue
+        button.getAllStyles().setBgColor(0x0000FF);  // Blue background
+        button.getAllStyles().setFgColor(0xFFFFFF);  // White text color
+        button.getAllStyles().setBgTransparency(255); // Fully opaque for the background
+
+        // Set padding and margins for spacing
+        button.getAllStyles().setPadding(10, 10, 10, 10);  // Padding: top, bottom, left, right
+        button.getAllStyles().setMargin(5, 5, 0, 0);  // Margin between buttons
+
+        // Set a white border to make the button stand out
+        button.getAllStyles().setBorder(Border.createLineBorder(2, 0xFFFFFF));  // White border
+
+    }
+}

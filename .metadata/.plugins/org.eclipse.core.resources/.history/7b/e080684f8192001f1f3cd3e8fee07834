@@ -1,0 +1,124 @@
+package com.mycompany.a2;
+
+import com.codename1.ui.Button;
+import com.codename1.ui.Container;
+import com.codename1.ui.Form;
+import com.codename1.ui.Label;
+import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.FlowLayout;
+import com.mycompany.a2.commands.MoveRightCommand;
+import com.mycompany.a2.commands.MoveLeftCommand;
+import com.mycompany.a2.commands.MoveUpCommand;
+import com.mycompany.a2.commands.MoveDownCommand;
+import com.mycompany.a2.commands.ExpandDoorCommand;
+import com.mycompany.a2.commands.ContractDoorCommand;
+import com.mycompany.a2.commands.GameTickCommand;
+import com.mycompany.a2.commands.ExitCommand;
+import com.mycompany.a2.commands.HelpCommand;
+
+public class Game extends Form {
+    private GameWorld gw;  // The game world (model)
+    private MapView mapView;  // The map view (observer)
+    private ScoreView scoreView;  // The score view (observer)
+
+    public Game() {
+        gw = new GameWorld();  // Create the GameWorld (Model)
+        mapView = new MapView();  // Create the MapView (View)
+        scoreView = new ScoreView();  // Create the ScoreView (View)
+
+        // Register views as observers of GameWorld
+        gw.addObserver(mapView);
+        gw.addObserver(scoreView);
+
+        // Layout setup for the game
+        this.setLayout(new BorderLayout());
+        this.add(BorderLayout.NORTH, scoreView);  // Add ScoreView to the top
+        this.add(BorderLayout.CENTER, mapView);   // Add MapView to the center
+
+        // Create toolbar for menu items
+        Toolbar toolbar = new Toolbar();
+        this.setToolbar(toolbar);
+        toolbar.setTitle("Spaceship Game");
+
+        // Add commands to the side menu
+        addCommandsToMenu(toolbar);
+
+        // Add buttons and organize layout
+        addCommandButtons();
+
+        // Add key bindings
+        addKeyBindings();
+
+        // Initialize the game world and start the game
+        gw.init();
+    }
+
+    // Attach commands to side menu items
+    private void addCommandsToMenu(Toolbar toolbar) {
+        toolbar.addCommandToSideMenu(new MoveRightCommand(gw));
+        toolbar.addCommandToSideMenu(new MoveLeftCommand(gw));
+        toolbar.addCommandToSideMenu(new MoveUpCommand(gw));
+        toolbar.addCommandToSideMenu(new MoveDownCommand(gw));
+        toolbar.addCommandToSideMenu(new ExpandDoorCommand(gw));
+        toolbar.addCommandToSideMenu(new ContractDoorCommand(gw));
+        toolbar.addCommandToSideMenu(new GameTickCommand(gw));
+        toolbar.addCommandToSideMenu(new HelpCommand());  // Help dialog command
+        toolbar.addCommandToSideMenu(new ExitCommand());  // Exit confirmation command
+    }
+
+    // Refactored method to add buttons with an organized layout
+    private void addCommandButtons() {
+        // Create buttons for game commands
+        Button moveRightButton = new Button("Move Right");
+        moveRightButton.setCommand(new MoveRightCommand(gw));
+
+        Button moveLeftButton = new Button("Move Left");
+        moveLeftButton.setCommand(new MoveLeftCommand(gw));
+
+        Button moveUpButton = new Button("Move Up");
+        moveUpButton.setCommand(new MoveUpCommand(gw));
+
+        Button moveDownButton = new Button("Move Down");
+        moveDownButton.setCommand(new MoveDownCommand(gw));
+
+        Button expandDoorButton = new Button("Expand Door");
+        expandDoorButton.setCommand(new ExpandDoorCommand(gw));
+
+        Button contractDoorButton = new Button("Contract Door");
+        contractDoorButton.setCommand(new ContractDoorCommand(gw));
+
+        Button tickButton = new Button("Tick");
+        tickButton.setCommand(new GameTickCommand(gw));
+
+        // Create containers to organize buttons
+        Container movementContainer = new Container(new FlowLayout(CENTER));
+        movementContainer.add(moveLeftButton);
+        movementContainer.add(moveRightButton);
+        movementContainer.add(moveUpButton);
+        movementContainer.add(moveDownButton);
+
+        Container doorContainer = new Container(new FlowLayout(CENTER));
+        doorContainer.add(expandDoorButton);
+        doorContainer.add(contractDoorButton);
+
+        Container tickContainer = new Container(new FlowLayout(CENTER));
+        tickContainer.add(tickButton);
+
+        // Add containers to the form layout for better organization
+        this.add(BorderLayout.SOUTH, movementContainer);  // Movement buttons
+        this.add(BorderLayout.SOUTH, doorContainer);      // Door buttons
+        this.add(BorderLayout.SOUTH, tickContainer);      // Game tick button
+    }
+
+    // Add key bindings for commands
+    private void addKeyBindings() {
+        addKeyListener('r', new MoveRightCommand(gw));
+        addKeyListener('l', new MoveLeftCommand(gw));
+        addKeyListener('u', new MoveUpCommand(gw));
+        addKeyListener('d', new MoveDownCommand(gw));
+        addKeyListener('e', new ExpandDoorCommand(gw));
+        addKeyListener('c', new ContractDoorCommand(gw));
+        addKeyListener('t', new GameTickCommand(gw));
+    }
+}

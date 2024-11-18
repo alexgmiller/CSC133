@@ -1,0 +1,295 @@
+package com.mycompany.a2;
+
+import java.util.Random;
+import com.codename1.charts.util.ColorUtil;
+
+public class GameWorld {
+    private int totalScore;
+    private int astronautsRescued;
+    private int aliensSneakedIn;
+    private int astronautCount;
+    private int alienCount;
+    private int gameClock;
+    private boolean gameEnded;
+    private GameObjectCollection gameObjects;  // Use GameObjectCollection for storing game objects
+    private Spaceship spaceship;
+    private final int gameWorldWidth = 1000;
+    private final int gameWorldHeight = 1000;
+    private Random random = new Random();
+
+    // Default constructor
+    public GameWorld() {
+        gameObjects = new GameObjectCollection();  // Initialize GameObjectCollection
+    }
+
+    // Initialize the game world
+    public void init() {
+        this.totalScore = 0;
+        this.astronautsRescued = 0;
+        this.aliensSneakedIn = 0;
+        this.astronautCount = 4;  // Fixed count of 4 astronauts
+        this.alienCount = 3;      // Fixed count of 3 aliens
+        this.gameClock = 0;
+        this.gameEnded = false;
+
+        addGameObjects();  // Add initial game objects
+    }
+
+    // Add initial GameObjects (Astronauts, Aliens, and Spaceship) to the GameWorld
+    private void addGameObjects() {
+        for (int i = 0; i < astronautCount; i++) {
+            gameObjects.add(new Astronaut());  // Add 4 astronauts
+        }
+
+        for (int i = 0; i < alienCount; i++) {
+            gameObjects.add(new Alien());  // Add 3 aliens
+        }
+
+        this.spaceship = Spaceship.getInstance();  // Singleton pattern for spaceship
+        gameObjects.add(spaceship);
+    }
+
+    // Example: Use iterator to display game objects
+    public void displayGameObjects() {
+        IIterator iterator = gameObjects.getIterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.getNext().toString());
+        }
+    }
+
+    // Move spaceship to the location of a random alien
+    public void transferSpaceshipToAlien() {
+        IIterator iterator = gameObjects.getIterator();
+        Alien alien = null;
+
+        // Find the first alien
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof Alien) {
+                alien = (Alien) obj;
+                break;
+            }
+        }
+
+        if (alien != null) {
+            spaceship.setLocation(alien.getLocation().getX(), alien.getLocation().getY());
+            System.out.println("Spaceship moved to alien at location: " + alien.getLocation());
+        } else {
+            System.out.println("No aliens present in the world.");
+        }
+    }
+
+    // Move spaceship to the location of a random astronaut
+    public void transferSpaceshipToAstronaut() {
+        IIterator iterator = gameObjects.getIterator();
+        Astronaut astronaut = null;
+
+        // Find the first astronaut
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof Astronaut) {
+                astronaut = (Astronaut) obj;
+                break;
+            }
+        }
+
+        if (astronaut != null) {
+            spaceship.setLocation(astronaut.getLocation().getX(), astronaut.getLocation().getY());
+            System.out.println("Spaceship moved to astronaut at location: " + astronaut.getLocation());
+        } else {
+            System.out.println("No astronauts present in the world.");
+        }
+    }
+
+    // Spaceship movement logic with boundary checks
+    public void moveRight() {
+        float currentX = spaceship.getLocation().getX();
+        if (currentX + 10 <= gameWorldWidth) {
+            spaceship.moveRight();
+        } else {
+            System.out.println("Cannot move right. Spaceship is at the right boundary.");
+        }
+    }
+
+    public void moveLeft() {
+        float currentX = spaceship.getLocation().getX();
+        if (currentX - 10 >= 0) {
+            spaceship.moveLeft();
+        } else {
+            System.out.println("Cannot move left. Spaceship is at the left boundary.");
+        }
+    }
+
+    public void moveUp() {
+        float currentY = spaceship.getLocation().getY();
+        if (currentY + 10 <= gameWorldHeight) {
+            spaceship.moveUp();
+        } else {
+            System.out.println("Cannot move up. Spaceship is at the top boundary.");
+        }
+    }
+
+    public void moveDown() {
+        float currentY = spaceship.getLocation().getY();
+        if (currentY - 10 >= 0) {
+            spaceship.moveDown();
+        } else {
+            System.out.println("Cannot move down. Spaceship is at the bottom boundary.");
+        }
+    }
+
+    // Expand spaceship door, limited to a maximum size of 1000
+    public void expandDoor() {
+        if (spaceship.getDoorSize() < 1000) {
+            spaceship.expandDoor();
+        } else {
+            System.out.println("Door is at maximum size.");
+        }
+    }
+
+    // Contract spaceship door, limited to a minimum size of 50
+    public void contractDoor() {
+        if (spaceship.getDoorSize() > 50) {
+            spaceship.contractDoor();
+        } else {
+            System.out.println("Door is at minimum size.");
+        }
+    }
+
+    // Handle alien-astronaut collision
+    public void collideAlienAndAstronaut() {
+        IIterator iterator = gameObjects.getIterator();
+        Astronaut astronaut = null;
+        Alien alien = null;
+
+        // Find one alien and one astronaut
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof Alien && alien == null) {
+                alien = (Alien) obj;
+            } else if (obj instanceof Astronaut && astronaut == null) {
+                astronaut = (Astronaut) obj;
+            }
+
+            if (alien != null && astronaut != null) {
+                break;
+            }
+        }
+
+        if (alien != null && astronaut != null) {
+            System.out.println("Alien and astronaut collided!");
+            astronaut.decrementHealth();
+            astronaut.fight();
+            int currentColor = astronaut.getColor();
+            int newColor = ColorUtil.rgb(ColorUtil.red(currentColor) - 50, ColorUtil.green(currentColor), ColorUtil.blue(currentColor));
+            astronaut.setColor(newColor);
+            astronaut.calculateSpeed();
+
+            if (astronaut.getHealth() == 0) {
+                System.out.println("Astronaut is incapacitated and stops moving.");
+                astronautCount--;
+                iterator.remove();  // Remove incapacitated astronaut
+            }
+        } else {
+            System.out.println("No aliens or astronauts present for a collision.");
+        }
+    }
+
+    // Open the spaceship door and rescue astronauts nearby
+    public void openSpaceshipDoor() {
+        System.out.println("Spaceship door opened.");
+        IIterator iterator = gameObjects.getIterator();
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof Astronaut) {
+                Astronaut astronaut = (Astronaut) obj;
+                float spaceshipX = spaceship.getLocation().getX();
+                float spaceshipY = spaceship.getLocation().getY();
+                float astronautX = astronaut.getLocation().getX();
+                float astronautY = astronaut.getLocation().getY();
+
+                if (Math.abs(spaceshipX - astronautX) < 10 && Math.abs(spaceshipY - astronautY) < 10) {
+                    System.out.println("Astronaut rescued!");
+                    int fights = astronaut.getFightsInvolved();
+                    int rescueScore = 10 - fights;
+                    totalScore += rescueScore;
+                    astronautsRescued++;
+                    astronautCount--;
+                    iterator.remove();  // Remove rescued astronaut
+                    break;
+                }
+            }
+        }
+    }
+
+    // Check if any aliens have sneaked into the spaceship
+    public void checkAlienSneakingIn() {
+        IIterator iterator = gameObjects.getIterator();
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof Alien) {
+                Alien alien = (Alien) obj;
+                float spaceshipX = spaceship.getLocation().getX();
+                float spaceshipY = spaceship.getLocation().getY();
+
+                // Check if alien is close enough to sneak into the spaceship
+                if (Math.abs(alien.getLocation().getX() - spaceshipX) < 10 && 
+                    Math.abs(alien.getLocation().getY() - spaceshipY) < 10) {
+                    aliensSneakedIn++;
+                    totalScore -= 10;  // Penalty for aliens sneaking in
+                    System.out.println("An alien sneaked into the spaceship!");
+                    iterator.remove();  // Remove the sneaked-in alien
+                    alienCount--;
+                }
+            }
+        }
+    }
+
+    // Update the game state (clock ticks, moving objects)
+    public void gameTick() {
+        gameClock++;
+        IIterator iterator = gameObjects.getIterator();
+        while (iterator.hasNext()) {
+            GameObject obj = iterator.getNext();
+            if (obj instanceof IMoving) {
+                ((IMoving) obj).move();
+            }
+        }
+        checkAlienSneakingIn();  // Check if any aliens sneak into the spaceship after moving
+        System.out.println("Clock ticked to: " + gameClock);
+
+        checkGameEnd();
+    }
+
+    // Check if the game has ended (all astronauts rescued)
+    public void checkGameEnd() {
+        if (astronautCount <= 0) {
+            gameEnded = true;
+            System.out.println("Game over! Final score: " + totalScore);
+            System.exit(0);
+        }
+    }
+
+    // Print the map and current state of the game world
+    public void printMap() {
+        IIterator iterator = gameObjects.getIterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.getNext().toString());
+        }
+    }
+
+    // Print the game state (score, astronaut and alien counts, etc.)
+    public void printGameState() {
+        System.out.println("Total score: " + totalScore);
+        System.out.println("Astronauts rescued: " + astronautsRescued);
+        System.out.println("Aliens sneaked in: " + aliensSneakedIn);
+        System.out.println("Remaining astronauts: " + astronautCount);
+        System.out.println("Remaining aliens: " + alienCount);
+    }
+
+    // Exit the game
+    public void exit() {
+        System.out.println("Exiting the game.");
+        System.exit(0);
+    }
+}

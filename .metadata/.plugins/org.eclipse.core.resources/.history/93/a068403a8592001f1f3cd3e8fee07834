@@ -1,0 +1,129 @@
+package com.mycompany.a2;
+
+import com.codename1.ui.Button;
+import com.codename1.ui.Container;
+import com.codename1.ui.Form;
+import com.codename1.ui.Label;
+import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.FlowLayout;
+import com.mycompany.a2.commands.*;
+
+public class Game extends Form {
+    private GameWorld gw;  // The game world (model)
+    private MapView mapView;  // The map view (observer)
+    private ScoreView scoreView;  // The score view (observer)
+
+    public Game() {
+        gw = new GameWorld();  // Create the GameWorld (Model)
+        mapView = new MapView();  // Create the MapView (View)
+        scoreView = new ScoreView();  // Create the ScoreView (View)
+
+        // Register views as observers of GameWorld
+        gw.addObserver(mapView);
+        gw.addObserver(scoreView);
+
+        // Set layout for the game
+        this.setLayout(new BorderLayout());
+
+        // Add the ScoreView at the top
+        this.add(BorderLayout.NORTH, scoreView);
+
+        // Add the MapView at the center
+        this.add(BorderLayout.CENTER, mapView);
+
+        // Create toolbar for the title bar
+        Toolbar toolbar = new Toolbar();
+        this.setToolbar(toolbar);
+        toolbar.setTitle("The Rescue Game");
+
+        // Add Help command to the right side of the toolbar
+        toolbar.addCommandToRightBar(new HelpCommand());
+
+        // Add side menu options if needed
+        addCommandsToMenu(toolbar);
+
+        // Add left, right, and bottom button containers
+        this.add(BorderLayout.WEST, createLeftButtonContainer());
+        this.add(BorderLayout.EAST, createRightButtonContainer());
+        this.add(BorderLayout.SOUTH, createBottomButtonContainer());
+
+        // Initialize the game world and start the game
+        gw.init();
+    }
+
+    // Add Commands to Side Menu
+    private void addCommandsToMenu(Toolbar toolbar) {
+        // Add commands to the side menu as needed
+    }
+
+    // Create a container for buttons on the left side
+    private Container createLeftButtonContainer() {
+        Container leftContainer = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        Button expandButton = new Button("Expand");
+        expandButton.setCommand(new ExpandDoorCommand(gw));
+
+        Button upButton = new Button("Up");
+        upButton.setCommand(new MoveUpCommand(gw));
+
+        Button leftButton = new Button("Left");
+        leftButton.setCommand(new MoveLeftCommand(gw));
+
+        Button moveToAstronautButton = new Button("MoveToAstronaut");
+        moveToAstronautButton.setCommand(new MoveAstronautCommand(gw));
+
+        leftContainer.add(expandButton);
+        leftContainer.add(upButton);
+        leftContainer.add(leftButton);
+        leftContainer.add(moveToAstronautButton);
+
+        return leftContainer;
+    }
+
+    // Create a container for buttons on the right side
+    private Container createRightButtonContainer() {
+        Container rightContainer = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        Button contractButton = new Button("Contract");
+        contractButton.setCommand(new ContractDoorCommand(gw));
+
+        Button downButton = new Button("Down");
+        downButton.setCommand(new MoveDownCommand(gw));
+
+        Button rightButton = new Button("Right");
+        rightButton.setCommand(new MoveRightCommand(gw));
+
+        Button moveToAlienButton = new Button("MoveToAlien");
+        moveToAlienButton.setCommand(new MoveAlienCommand(gw));
+
+        Button scoreButton = new Button("Score");
+        scoreButton.setCommand(new ScoreCommand(gw));
+
+        rightContainer.add(contractButton);
+        rightContainer.add(downButton);
+        rightContainer.add(rightButton);
+        rightContainer.add(moveToAlienButton);
+        rightContainer.add(scoreButton);
+
+        return rightContainer;
+    }
+
+    // Create a container for buttons at the bottom
+    private Container createBottomButtonContainer() {
+        Container bottomContainer = new Container(new FlowLayout(CENTER));
+        Button newAlienButton = new Button("NewAlien");
+        newAlienButton.setCommand(new NewAlienCommand(gw));
+
+        Button fightButton = new Button("Fight");
+        fightButton.setCommand(new FightCommand(gw));
+
+        Button tickButton = new Button("Tick");
+        tickButton.setCommand(new GameTickCommand(gw));
+
+        bottomContainer.add(newAlienButton);
+        bottomContainer.add(fightButton);
+        bottomContainer.add(tickButton);
+
+        return bottomContainer;
+    }
+}

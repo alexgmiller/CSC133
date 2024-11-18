@@ -1,0 +1,27 @@
+import com.codename1.ui.Container;
+import com.codename1.ui.Label;
+import com.codename1.ui.layouts.BoxLayout;
+import java.util.Observable;
+import java.util.Observer;
+
+public class MapView extends Container implements Observer {
+
+    public MapView() {
+        this.setLayout(new BoxLayout(BoxLayout.Y_AXIS));  // Vertical layout
+        this.add(new Label("Map View"));
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o instanceof GameWorld) {
+            GameWorld gw = (GameWorld) o;
+            this.removeAll();  // Clear previous output
+            IIterator iterator = gw.getGameObjects().getIterator();
+            while (iterator.hasNext()) {
+                GameObject obj = iterator.getNext();
+                this.add(new Label(obj.toString()));  // Update with game object info
+            }
+            this.revalidate();  // Refresh the view
+        }
+    }
+}

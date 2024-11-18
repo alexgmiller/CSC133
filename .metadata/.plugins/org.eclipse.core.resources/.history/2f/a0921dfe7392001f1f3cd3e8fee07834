@@ -1,0 +1,123 @@
+package com.mycompany.a2;
+
+import com.codename1.ui.Form;
+import com.codename1.ui.Button;
+import com.codename1.ui.Toolbar;
+import com.codename1.ui.layouts.BorderLayout;
+import com.mycompany.a2.commands.MoveRightCommand;
+import com.mycompany.a2.commands.MoveLeftCommand;
+import com.mycompany.a2.commands.MoveUpCommand;
+import com.mycompany.a2.commands.MoveDownCommand;
+import com.mycompany.a2.commands.ExpandDoorCommand;
+import com.mycompany.a2.commands.ContractDoorCommand;
+import com.mycompany.a2.commands.GameTickCommand;
+import com.mycompany.a2.commands.ExitCommand;
+import com.mycompany.a2.commands.HelpCommand;
+
+public class Game extends Form {
+    private GameWorld gw;
+    private MapView mapView;
+    private ScoreView scoreView;
+
+    public Game() {
+        gw = new GameWorld();  // Create GameWorld (Model)
+        mapView = new MapView();  // Create MapView (View)
+        scoreView = new ScoreView();  // Create ScoreView (View)
+
+        // Register views as observers of GameWorld (Model)
+        gw.addObserver(mapView);
+        gw.addObserver(scoreView);
+
+        // Layout setup for the game
+        this.setLayout(new BorderLayout());
+        this.add(BorderLayout.NORTH, scoreView);  // Add ScoreView to the top
+        this.add(BorderLayout.CENTER, mapView);   // Add MapView to the center
+
+        // Create toolbar for menu items
+        Toolbar toolbar = new Toolbar();
+        this.setToolbar(toolbar);
+        toolbar.setTitle("Spaceship Game");
+
+        // Add Commands to the side menu
+        addCommandsToMenu(toolbar);
+
+        // Add Buttons and set layout
+        addCommandButtons();
+
+        // Add key bindings
+        addKeyBindings();
+
+        // Initialize game world and start the game
+        gw.init();
+    }
+
+    // Attach Commands to Side Menu Items
+    private void addCommandsToMenu(Toolbar toolbar) {
+        toolbar.addCommandToSideMenu(new MoveRightCommand(gw));
+        toolbar.addCommandToSideMenu(new MoveLeftCommand(gw));
+        toolbar.addCommandToSideMenu(new MoveUpCommand(gw));
+        toolbar.addCommandToSideMenu(new MoveDownCommand(gw));
+        toolbar.addCommandToSideMenu(new ExpandDoorCommand(gw));
+        toolbar.addCommandToSideMenu(new ContractDoorCommand(gw));
+        toolbar.addCommandToSideMenu(new GameTickCommand(gw));
+        toolbar.addCommandToSideMenu(new HelpCommand());  // Help dialog command
+        toolbar.addCommandToSideMenu(new ExitCommand());  // Exit confirmation command
+    }
+
+    // Attach Commands to Buttons
+    private void addCommandButtons() {
+        Button moveRightButton = new Button("Move Right");
+        moveRightButton.setCommand(new MoveRightCommand(gw));  // Attach the command
+
+        Button moveLeftButton = new Button("Move Left");
+        moveLeftButton.setCommand(new MoveLeftCommand(gw));  // Attach the command
+
+        Button moveUpButton = new Button("Move Up");
+        moveUpButton.setCommand(new MoveUpCommand(gw));  // Attach the command
+
+        Button moveDownButton = new Button("Move Down");
+        moveDownButton.setCommand(new MoveDownCommand(gw));  // Attach the command
+
+        Button expandDoorButton = new Button("Expand Door");
+        expandDoorButton.setCommand(new ExpandDoorCommand(gw));  // Attach the command
+
+        Button contractDoorButton = new Button("Contract Door");
+        contractDoorButton.setCommand(new ContractDoorCommand(gw));  // Attach the command
+
+        Button tickButton = new Button("Tick");
+        tickButton.setCommand(new GameTickCommand(gw));  // Attach the command
+
+        // Add the buttons to the layout (adjust layout as needed)
+        this.add(BorderLayout.SOUTH, moveLeftButton);
+        this.add(BorderLayout.SOUTH, moveRightButton);
+        this.add(BorderLayout.SOUTH, moveUpButton);
+        this.add(BorderLayout.SOUTH, moveDownButton);
+        this.add(BorderLayout.SOUTH, expandDoorButton);
+        this.add(BorderLayout.SOUTH, contractDoorButton);
+        this.add(BorderLayout.SOUTH, tickButton);
+    }
+
+    // Add Key Bindings
+    private void addKeyBindings() {
+        // 'r' for moving right
+        addKeyListener('r', new MoveRightCommand(gw));
+
+        // 'l' for moving left
+        addKeyListener('l', new MoveLeftCommand(gw));
+
+        // 'u' for moving up
+        addKeyListener('u', new MoveUpCommand(gw));
+
+        // 'd' for moving down
+        addKeyListener('d', new MoveDownCommand(gw));
+
+        // 'e' for expanding door
+        addKeyListener('e', new ExpandDoorCommand(gw));
+
+        // 'c' for contracting door
+        addKeyListener('c', new ContractDoorCommand(gw));
+
+        // 't' for game tick
+        addKeyListener('t', new GameTickCommand(gw));
+    }
+}
